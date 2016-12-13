@@ -1,0 +1,24 @@
+{#
+  submission
+  form
+#}
+
+<div class="synmail">
+  <p>
+  Form:
+  form-id:{{ form.id }}<br />
+  form-label:{{ form.label }}<br />
+  form-to:
+  {% for recip in form.recipients %}
+      {{ recip }}<br />
+  {% endfor %}
+  </p>
+  <p>
+    Created: {{ submission.created[0][0]['value'] | date("d F Y") }}
+  </p>
+  <p>
+    {% for key, val in submission.data %}
+        {{ key }} - {{ val }}<br />
+    {% endfor %}
+  </p>
+</div>

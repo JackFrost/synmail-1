@@ -1,0 +1,7 @@
+synmail.settings:
+  path: '/admin/config/synapse/synmail'
+  defaults:
+    _form: '\Drupal\synmail\Form\Settings'
+    _title: 'Synmail Settings'
+  requirements:
+    _permission: 'administer nodes'

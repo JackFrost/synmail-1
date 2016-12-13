@@ -1,0 +1,5 @@
+synmail.settings:
+  title: 'Synmail Settings'
+  parent: synapse.page
+  description: 'Settings'
+  route_name: synmail.settings

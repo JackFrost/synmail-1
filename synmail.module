@@ -1,0 +1,144 @@
+<?php
+
+/**
+ * @file
+ * Module.
+ */
+
+use Drupal\Core\Render\Markup;
+use Drupal\synmail\Controller\PhpMail;
+
+/**
+ * Implements hook_ENTITY_TYPE_presave().
+ */
+function synmail_contact_message_presave($entity) {
+  if (empty($entity->subject->getValue())) {
+    // Id формы в сущности, где отработал пресейв.
+    $formId = $entity->contact_form->getString();
+    // подгружаем сущность формы.
+    $entityForm = \Drupal::entityManager()->getStorage('contact_form')->load($formId);
+    // получаем ее заголовок.
+    $formTitle = !empty($entityForm->get('label')) ? $entityForm->get('label') : 'Контактная форма';
+    // присваиваем к сохраненному сообщению.
+    $entity->subject->setValue($formTitle);
+  }
+}
+
+/**
+ * Implements hook_mail_alter().
+ */
+function synmail_mail_alter(&$message) {
+  $config = \Drupal::config('synmail.settings');
+  if ($message['id'] == 'contact_page_mail') {
+    _synmail_mail_dsm($message);
+
+    // If need custom template.
+    if ($config->get('tpl')) {
+      $submission = $message['params']['contact_message']->toArray();
+      $form = $message['params']['contact_form']->toArray();
+      // Template helper.
+      foreach ($submission as $key => $value) {
+        if (strpos($key, 'field_') !== FALSE) {
+          $submission['data'][$key] = $value[0]['value'];
+        }
+      }
+      $body = [];
+      $body['mail'] = [
+        '#theme' => 'synmail',
+        '#submission' => $submission,
+        '#form' => $form,
+      ];
+      $html = \Drupal::service('renderer')->render($body);
+      $message['body'][1] = Markup::create($html);
+    }
+
+    // От кого слать письма.
+    if ($config->get('from')) {
+      $message['headers']['From'] = $config->get('from');
+    }
+
+    // Добавить в шапку признак хтмл.
+    if ($config->get('html')) {
+      $message['headers']['Content-Type'] = 'text/html';
+    }
+
+    // Добавить поулчателей.
+    if ($config->get('emails')) {
+      $to = [];
+      $to[] = $message['to'];
+      $emails = $config->get('emails');
+      $emails = explode("\n", $emails);
+      foreach ($emails as $email) {
+        if (strpos($email, "@") && strpos($email, ".")) {
+          $to[] = trim($email);
+        }
+      }
+      $message['to'] = implode(', ', $to);
+    }
+
+    // Использовать свой пхпмейл.
+    if ($config->get('phpmail')) {
+      $message['send'] = FALSE;
+      PhpMail::mail($message);
+    }
+
+  }
+
+}
+
+/**
+ * Implements hook_theme().
+ */
+function synmail_theme() {
+  return [
+    'synmail' => [
+      'template' => 'synmail',
+      'variables' => ['submission' => [], 'form' => []],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK() for synmail.tpl.php.
+ */
+function synmail_theme_suggestions_synmail(array $variables) {
+  $suggestions = [];
+  $suggestions[] = 'synmail';
+  $suggestions[] = 'synmail__' . $variables['message']['key'];
+  return $suggestions;
+}
+
+/**
+ * MSG dsm helper.
+ */
+function _synmail_mail_dsm($message) {
+  $config = \Drupal::config('synmail.settings');
+
+  if ($config->get('debug')) {
+    $m = [];
+    foreach ($message as $key => $value) {
+      if (is_scalar($value)) {
+        $m[$key] = $value;
+      }
+      elseif ($key == 'headers') {
+        $m[$key] = $value;
+      }
+      else {
+        if ($key == 'body') {
+          $m[$key][$k] = '$v';
+        }
+        else {
+          foreach ($value as $k => $v) {
+            if ($k == 'convert') {
+              $m[$key][$k] = $v;
+            }
+            else {
+              $m[$key][$k] = $v->toArray();
+            }
+          }
+        }
+      }
+    }
+    dsm($m);
+  }
+}
