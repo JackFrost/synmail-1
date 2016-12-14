@@ -1,0 +1,6 @@
+tpl: 0
+from: ''
+phpmail: 1
+html: 0
+debug: 0
+emails: ''
