@@ -52,16 +52,6 @@ function synmail_mail_alter(&$message) {
       $message['body'][1] = Markup::create($html);
     }
 
-    // От кого слать письма.
-    if ($config->get('from')) {
-      $message['headers']['From'] = $config->get('from');
-    }
-
-    // Добавить в шапку признак хтмл.
-    if ($config->get('html')) {
-      $message['headers']['Content-Type'] = 'text/html';
-    }
-
     // Добавить поулчателей.
     if ($config->get('emails')) {
       $to = [];
@@ -76,12 +66,21 @@ function synmail_mail_alter(&$message) {
       $message['to'] = implode(', ', $to);
     }
 
-    // Использовать свой пхпмейл.
-    if ($config->get('phpmail')) {
-      $message['send'] = FALSE;
-      PhpMail::mail($message);
-    }
+  }
 
+  // От кого слать письма.
+  if ($config->get('from')) {
+    $message['headers']['From'] = $config->get('from');
+  }
+
+  // Добавить в шапку признак хтмл.
+  if ($config->get('html')) {
+    $message['headers']['Content-Type'] = 'text/html';
+  }
+  // Использовать свой пхпмейл.
+  if ($config->get('phpmail')) {
+    $message['send'] = FALSE;
+    PhpMail::mail($message);
   }
 
 }
