@@ -51,7 +51,7 @@ class Settings extends ConfigFormBase {
       '#default_value' => $config->get('from'),
       '#type' => 'textfield',
       '#description' => $this->t('От кого слать письма,
-        напр: Сайт < webmaster@insaitov.ru>'),
+        напр: Сайт <webmaster@insaitov.ru>'),
     ];
     $form["general"]['html'] = array(
       '#title' => $this->t('Послыть html, а не txt'),
