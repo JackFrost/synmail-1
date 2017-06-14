@@ -1,0 +1,11 @@
+{
+    "name": "synapse/synmail",
+    "type": "drupal-custom-module",
+    "description": "Synapse Mailsys.",
+    "homepage": "https://github.com/synapse-studio/synhelper",
+    "license": "GPL-2.0+",
+    "require": {
+        "drupal/core": "~8.3"
+    },
+    "minimum-stability": "dev"
+}
