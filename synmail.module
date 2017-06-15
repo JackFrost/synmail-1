@@ -39,7 +39,9 @@ function synmail_mail_alter(&$message) {
       // Template helper.
       foreach ($submission as $key => $value) {
         if (strpos($key, 'field_') !== FALSE) {
-          $submission['data'][$key] = $value[0]['value'];
+          $FieldDefinition = $message['params']['contact_message']->$key->getFieldDefinition();
+          $label = $FieldDefinition->label();
+          $submission['data'][$label] = $value[0]['value'];        
         }
       }
       $body = [];
